@@ -20,7 +20,7 @@ const db = mysql.createConnection({
 })
 
 app.post('/signup', (req, res) => {
-    const sql = "INSERT INTO login(`fname`,`lname`,`email`,`password`) values(?)";
+    const sql = "INSERT INTO login(`fname`,`lname`,`gender`,`residence`,`address`,`email`,`password`) values(?)";
     const password = req.body.password;
     bcrypt.hash(password.toString(), salt, (err, hash) => {
         if (err) {
@@ -29,6 +29,9 @@ app.post('/signup', (req, res) => {
         const values = [
             req.body.fname,
             req.body.lname,
+            req.body.gender,
+            req.body.residence,
+            req.body.address,
             req.body.email,
             hash
         ]
@@ -67,7 +70,7 @@ app.post('/login', (req, res) => {
         if (data.length > 0) {
             bcrypt.compare(req.body.password.toString(), data[0].password, (err, resp) => {
                 if (err) {
-                    console.log("password mismatched error",err);
+                    console.log("password mismatched error", err);
                     return res.json("Password Not Matched");
                 }
                 if (resp) {
@@ -118,6 +121,30 @@ app.get('/getUserById', (req, res) => {
             return res.json({ result: false });
         } else {
             return res.json({ result: true, data });
+        }
+    });
+});
+
+app.get('/getAllUsers', (req, res) => {
+    const id = parseInt(req.query.id);
+    const sql = "SELECT id,fname,lname,email FROM login ";
+    db.query(sql, (err, data) => {
+        if (err) {
+            return res.json({ result: false });
+        } else {
+            return res.json({ result: true, data });
+        }
+    });
+});
+
+app.delete('/deleteUserById', (req, res) => {
+    const id = parseInt(req.query.id);
+    const sql = "DELETE FROM login WHERE id = ?";
+    db.query(sql, [id], (err, data) => {
+        if (err) {
+            return res.json({ result: false });
+        } else {
+            return res.json({ result: true, Message:`User deleted With Id = ${id}`});
         }
     });
 });
